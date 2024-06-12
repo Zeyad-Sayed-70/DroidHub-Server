@@ -4,8 +4,8 @@ import mongoose, { Model } from 'mongoose';
 import { User } from './schema/user.schema';
 import { CreateUserDto } from './dto/create-user-dto';
 import { hash } from 'bcrypt';
-import { PostType } from 'src/posts/types/post-type';
 import { Post } from 'src/posts/schema/post-schema';
+import { CreateUserByGoogleDto } from './dto/create-user-by-google-dto';
 
 @Injectable()
 export class UsersService {
@@ -32,6 +32,33 @@ export class UsersService {
 
       // create new user
       const newUser = new this.userModel({ ...restDto, hashedPassword });
+      return newUser.save();
+    } catch (error) {
+      Logger.error(error);
+      throw new HttpException(
+        error.message || 'Failed to create new user',
+        error.status || HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  async createUserByGoogle(createUserByGoogleDto: CreateUserByGoogleDto) {
+    try {
+      // check if user already exists
+      const userExists = await this.userModel
+        .findOne({
+          email: createUserByGoogleDto.email,
+        })
+        .select({ hashPassword: false, __v: false })
+        .exec();
+
+      if (userExists) return userExists;
+
+      // create new user
+      const newUser = new this.userModel({
+        ...createUserByGoogleDto,
+        probability_being: 'human_probably',
+      });
       return newUser.save();
     } catch (error) {
       Logger.error(error);

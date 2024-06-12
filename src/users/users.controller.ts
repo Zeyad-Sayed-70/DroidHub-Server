@@ -10,6 +10,7 @@ import {
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user-dto';
 import { CreateUserDto } from './dto/create-user-dto';
+import { CreateUserByGoogleDto } from './dto/create-user-by-google-dto';
 
 @Controller('users')
 export class UsersController {
@@ -28,6 +29,11 @@ export class UsersController {
   @Post()
   createUser(@Body() createUserDto: CreateUserDto) {
     return this.usersService.createUser(createUserDto);
+  }
+
+  @Post('by/google')
+  createUserByGoogle(@Body() createUserByGoogleDto: CreateUserByGoogleDto) {
+    return this.usersService.createUserByGoogle(createUserByGoogleDto);
   }
 
   @Put(':userId')
