@@ -4,7 +4,6 @@ import mongoose, { Model } from 'mongoose';
 import { User } from './schema/user.schema';
 import { CreateUserDto } from './dto/create-user-dto';
 import { hash } from 'bcrypt';
-import { PostType } from 'src/posts/types/post-type';
 import { Post } from 'src/posts/schema/post-schema';
 import { CreateUserByGoogleDto } from './dto/create-user-by-google-dto';
 
