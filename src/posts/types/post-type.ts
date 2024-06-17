@@ -1,8 +1,8 @@
 import mongoose from 'mongoose';
 
 export type Reactions = {
-  like: number;
-  comments: number;
+  like?: string[];
+  comments?: string[];
 };
 
 export type PostType = {

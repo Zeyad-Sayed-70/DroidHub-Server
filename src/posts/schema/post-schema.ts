@@ -56,15 +56,21 @@ export class Post {
 
   @Prop({
     type: {
-      like: { type: Number, default: 0, min: 0 },
-      comments: { type: Number, default: 0, min: 0 },
+      like: { type: [String], default: [] },
+      comments: { type: [String], default: [] },
     },
     default: {
-      like: 0,
-      comments: 0,
+      like: [],
+      comments: [],
     },
   })
   reactions: Reactions;
+
+  @Prop({
+    type: [String],
+    default: [],
+  })
+  comments: string[];
 }
 
 export const PostSchema = SchemaFactory.createForClass(Post);

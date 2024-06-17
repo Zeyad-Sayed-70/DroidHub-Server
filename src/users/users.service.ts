@@ -118,6 +118,27 @@ export class UsersService {
     }
   }
 
+  async getUsersById(usersIds: string[]) {
+    try {
+      const users = await this.userModel
+        .find({
+          _id: {
+            $in: usersIds,
+          },
+        })
+        .select({ hashedPassword: false, __v: false })
+        .exec();
+
+      return users;
+    } catch (error) {
+      Logger.error(error);
+      throw new HttpException(
+        error.message || 'Failed to get all users',
+        error.status || HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
   async deleteUserById(userId: string) {
     try {
       const objectId = new mongoose.Types.ObjectId(userId);
