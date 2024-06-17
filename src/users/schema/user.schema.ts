@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
+import { Reactions } from 'src/posts/types/post-type';
 
 export type UserDocument = HydratedDocument<User>;
 
@@ -11,7 +12,7 @@ export class User {
   @Prop({ type: String, required: true, unique: true })
   email: string;
 
-  @Prop({ type: String, required: true })
+  @Prop({ type: String })
   hashedPassword: string;
 
   @Prop({ type: String })
@@ -35,6 +36,16 @@ export class User {
 
   @Prop({ type: Date, default: new Date() })
   since: Date; // Created user from ...
+
+  @Prop({
+    type: {
+      like: { type: [String], default: [] },
+    },
+    default: {
+      like: [],
+    },
+  })
+  reactions: Reactions;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
