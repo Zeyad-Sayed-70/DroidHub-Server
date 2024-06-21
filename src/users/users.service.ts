@@ -6,6 +6,7 @@ import { CreateUserDto } from './dto/create-user-dto';
 import { hash } from 'bcrypt';
 import { Post } from 'src/posts/schema/post-schema';
 import { CreateUserByGoogleDto } from './dto/create-user-by-google-dto';
+import { Options } from './types/get-users-options';
 
 @Injectable()
 export class UsersService {
@@ -69,14 +70,16 @@ export class UsersService {
     }
   }
 
-  async getAllUsers(robotsOnly = false) {
+  async getAllUsers(options: Options) {
     try {
       const users = await this.userModel
-        .find({})
+        .find(JSON.parse(options.filters))
+        .skip(parseInt(options.skip as string))
+        .limit(JSON.parse(options.limit as string))
         .select({ hashedPassword: false, __v: false })
         .exec();
 
-      if (robotsOnly) {
+      if (JSON.parse(options.robotsOnly as string)) {
         return users.filter((user) => user.probability_being === 'robot');
       }
 
@@ -139,6 +142,28 @@ export class UsersService {
     }
   }
 
+  async getUsersByName(name: string) {
+    try {
+      const users = await this.userModel
+        .find({
+          username: {
+            $regex: name,
+            $options: 'i',
+          },
+        })
+        .select({ hashedPassword: false, __v: false })
+        .exec();
+
+      return users;
+    } catch (error) {
+      Logger.error(error);
+      throw new HttpException(
+        error.message || 'Failed to get users by name',
+        error.status || HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
   async deleteUserById(userId: string) {
     try {
       const objectId = new mongoose.Types.ObjectId(userId);
@@ -183,5 +208,124 @@ export class UsersService {
     for (const user of users) hash_ids[user._id.toString()] = user;
 
     return hash_ids;
+  }
+
+  async follow(userId: string, followId: string) {
+    try {
+      const objectId = new mongoose.Types.ObjectId(userId);
+      const followObjectId = new mongoose.Types.ObjectId(followId);
+
+      if (!mongoose.isValidObjectId(objectId)) {
+        throw new HttpException('Invalid userId', HttpStatus.BAD_REQUEST);
+      }
+
+      if (!mongoose.isValidObjectId(followObjectId)) {
+        throw new HttpException('Invalid followId', HttpStatus.BAD_REQUEST);
+      }
+
+      const user = await this.userModel
+        .findById(objectId)
+        .select({ hashedPassword: false, __v: false })
+        .exec();
+
+      // check if user exist
+      if (!user) {
+        throw new HttpException('User not exists', HttpStatus.BAD_REQUEST);
+      }
+
+      const followUser = await this.userModel
+        .findById(followObjectId)
+        .select({ hashedPassword: false, __v: false })
+        .exec();
+
+      // check if follow user exist
+      if (!followUser) {
+        throw new HttpException(
+          'Follow user not exists',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      if (user.following.includes(followObjectId.toString())) {
+        throw new HttpException(
+          'You already follow this user',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      user.following.push(followObjectId.toString());
+      followUser.followers.push(objectId.toString());
+
+      await user.save();
+      await followUser.save();
+
+      return user;
+    } catch (error) {
+      Logger.error(error);
+      throw new HttpException(
+        error.message || 'Internal Server Error',
+        error.status || HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async unfollow(userId: string, unfollowId: string) {
+    try {
+      const objectId = new mongoose.Types.ObjectId(userId);
+      const unfollowObjectId = new mongoose.Types.ObjectId(unfollowId);
+
+      if (!mongoose.isValidObjectId(objectId)) {
+        throw new HttpException('Invalid userId', HttpStatus.BAD_REQUEST);
+      }
+
+      if (!mongoose.isValidObjectId(unfollowObjectId)) {
+        throw new HttpException('Invalid unfollowId', HttpStatus.BAD_REQUEST);
+      }
+
+      const user = await this.userModel
+        .findById(objectId)
+        .select({ hashedPassword: false, __v: false })
+        .exec();
+
+      // check if user exist
+      if (!user) {
+        throw new HttpException('User not exists', HttpStatus.BAD_REQUEST);
+      }
+
+      const unfollowUser = await this.userModel
+        .findById(unfollowObjectId)
+        .select({ hashedPassword: false, __v: false })
+        .exec();
+
+      // check if unfollow user exist
+      if (!unfollowUser) {
+        throw new HttpException(
+          'Unfollow user not exists',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      if (!user.following.includes(unfollowObjectId.toString())) {
+        throw new HttpException(
+          'You already unfollow this user',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      const index = user.following.indexOf(unfollowObjectId.toString());
+      user.following.splice(index, 1);
+      const unfollowIndex = unfollowUser.followers.indexOf(objectId.toString());
+      unfollowUser.followers.splice(unfollowIndex, 1);
+
+      await user.save();
+      await unfollowUser.save();
+
+      return user;
+    } catch (error) {
+      throw new HttpException(
+        error.message || 'Internal Server Error',
+        error.status || HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }

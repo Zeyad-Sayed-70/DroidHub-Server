@@ -35,12 +35,15 @@ export class PostsController {
   }
 
   @Put(':postId')
-  updatePostById(@Param() postId: string, @Body() body: UpdatePostDto) {
+  updatePostById(
+    @Param() { postId }: { postId: string },
+    @Body() body: UpdatePostDto,
+  ) {
     return this.postsService.updatePost(postId, body);
   }
 
   @Delete(':postId')
-  deletePostById(@Param() postId: string) {
+  deletePostById(@Param() { postId }: { postId: string }) {
     return this.postsService.deletePost(postId);
   }
 

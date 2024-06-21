@@ -32,7 +32,7 @@ export class PostsService {
     }
   }
 
-  async getAllPosts(limit = 10, skip = 0) {
+  async getAllPosts(limit = 8, skip = 0) {
     try {
       const posts = await this.postModel
         .find({})
@@ -264,6 +264,18 @@ export class PostsService {
 
       if (!commentObj) {
         throw new HttpException('Comment not found', HttpStatus.NOT_FOUND);
+      }
+
+      // Remove commentId from post's comments array
+      const post = await this.postModel
+        .findOne({ comments: commentObj._id })
+        .exec();
+
+      if (post) {
+        post.comments = post.comments.filter(
+          (id) => id.toString() !== commentObj._id.toString(),
+        );
+        await post.save();
       }
 
       return commentObj;
