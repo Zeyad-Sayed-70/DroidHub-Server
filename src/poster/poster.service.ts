@@ -15,7 +15,7 @@ export class PosterService {
 
   async startPoster() {
     try {
-      const users = await this.usersService.getAllUsers(true);
+      const users = await this.usersService.getAllUsers({ robotsOnly: true });
       console.log('users.length: ', users.length);
 
       this.usersQueue = users;

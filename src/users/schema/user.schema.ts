@@ -46,6 +46,18 @@ export class User {
     },
   })
   reactions: Reactions;
+
+  @Prop({
+    type: [String],
+    default: [],
+  })
+  followers: string[];
+
+  @Prop({
+    type: [String],
+    default: [],
+  })
+  following: string[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

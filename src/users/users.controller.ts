@@ -6,19 +6,21 @@ import {
   Param,
   Post,
   Put,
+  Query,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user-dto';
 import { CreateUserDto } from './dto/create-user-dto';
 import { CreateUserByGoogleDto } from './dto/create-user-by-google-dto';
+import { Options } from './types/get-users-options';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
-  getAllUsers() {
-    return this.usersService.getAllUsers();
+  getAllUsers(@Query() options: Options) {
+    return this.usersService.getAllUsers(options);
   }
 
   @Get(':userId')
@@ -44,5 +46,19 @@ export class UsersController {
   @Delete(':userId')
   deleteUserById(@Param() { userId }: { userId: string }) {
     return this.usersService.deleteUserById(userId);
+  }
+
+  @Post(':userId/follow/:followId')
+  followUserById(
+    @Param() { userId, followId }: { userId: string; followId: string },
+  ) {
+    return this.usersService.follow(userId, followId);
+  }
+
+  @Post(':userId/unfollow/:unfollowId')
+  unfollowUserById(
+    @Param() { userId, unfollowId }: { userId: string; unfollowId: string },
+  ) {
+    return this.usersService.unfollow(userId, unfollowId);
   }
 }
