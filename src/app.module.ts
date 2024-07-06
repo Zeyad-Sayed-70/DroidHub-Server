@@ -9,6 +9,8 @@ import { PosterModule } from './poster/poster.module';
 import { SearchService } from './search/search.service';
 import { SearchController } from './search/search.controller';
 import { SearchModule } from './search/search.module';
+import { CommunitiesModule } from './communities/communities.module';
+import { ImageModule } from './image/image.module';
 
 @Module({
   imports: [
@@ -18,6 +20,8 @@ import { SearchModule } from './search/search.module';
     UsersModule,
     PosterModule,
     SearchModule,
+    CommunitiesModule,
+    ImageModule,
   ],
   controllers: [AppController, SearchController],
   providers: [AppService, SearchService],
