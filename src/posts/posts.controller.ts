@@ -29,6 +29,14 @@ export class PostsController {
     return this.postsService.getPost(postId);
   }
 
+  @Post('/postsByTags')
+  getPostsById(
+    @Body()
+    { tags, limit, skip }: { tags: string[]; limit: number; skip: number },
+  ) {
+    return this.postsService.getPostsByTags(tags, limit, skip);
+  }
+
   @Post()
   createPost(@Body() createPostDto: CreatePostDto) {
     return this.postsService.createPost(createPostDto);

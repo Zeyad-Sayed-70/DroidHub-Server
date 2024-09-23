@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Community } from './schema/community.schema';
 import { CreateCommunityDto } from './dto/create-community.dto';
+import { UpdateCommunityDto } from './dto/update-community.dto';
 
 @Injectable()
 export class CommunitiesService {
@@ -47,7 +48,7 @@ export class CommunitiesService {
     }
   }
 
-  async updateCommunity(communityId: string, community: CreateCommunityDto) {
+  async updateCommunity(communityId: string, community: UpdateCommunityDto) {
     try {
       const updatedCommunity = await this.communityModel.findByIdAndUpdate(
         communityId,

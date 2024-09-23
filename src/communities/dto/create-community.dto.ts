@@ -8,5 +8,8 @@ export class CreateCommunityDto {
   description: string;
 
   @Prop()
+  tags: string[];
+
+  @Prop()
   image?: string;
 }

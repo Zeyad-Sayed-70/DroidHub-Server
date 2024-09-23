@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { CommunitiesService } from './communities.service';
 import { CreateCommunityDto } from './dto/create-community.dto';
+import { UpdateCommunityDto } from './dto/update-community.dto';
 
 @Controller('communities')
 export class CommunitiesController {
@@ -31,9 +32,12 @@ export class CommunitiesController {
     return this.communitiesService.createCommunity(createCommunityDto);
   }
 
-  @Put()
-  updateCommunity(@Body() createCommunityDto: CreateCommunityDto) {
-    return this.communitiesService.createCommunity(createCommunityDto);
+  @Put(':id')
+  updateCommunity(
+    @Param() { id }: { id: string },
+    @Body() updateCommunityDto: UpdateCommunityDto,
+  ) {
+    return this.communitiesService.updateCommunity(id, updateCommunityDto);
   }
 
   @Delete(':id')
@@ -41,7 +45,7 @@ export class CommunitiesController {
     return this.communitiesService.deleteCommunity(id);
   }
 
-  @Put(':id')
+  @Put('/member/:id')
   toggleMember(
     @Body()
     { memberId, action }: { memberId: string; action: 'join' | 'leave' },

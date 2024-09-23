@@ -9,6 +9,7 @@ import { UpdatePostDto } from './dto/update-post-dto';
 import { CreateCommentsDto } from './dto/create-comments-dto';
 import { Comment } from './schema/comment-schema';
 import { UpdateCommentsDto } from './dto/update-comment-dto';
+import { UserType } from 'src/users/types/user.types';
 
 @Injectable()
 export class PostsService {
@@ -50,6 +51,35 @@ export class PostsService {
       return { posts, users };
     } catch (error) {
       console.log(error);
+    }
+  }
+
+  async getPostsByTags(
+    tags: string[],
+    limit = 8,
+    skip = 0,
+  ): Promise<{ posts: PostType[]; users: { [key: string]: UserType } }> {
+    try {
+      const posts = await this.postModel
+        .find({ tags: { $in: tags } })
+        .skip(skip)
+        .limit(limit)
+        .exec();
+
+      if (!posts) {
+        throw new HttpException('Posts not found', HttpStatus.NOT_FOUND); // 404 Not Found
+      }
+
+      // Fetch all users in hash map structure
+      const users = await this.usersService.getUsersByPosts(posts);
+
+      return { posts, users };
+    } catch (error) {
+      Logger.error(error);
+      throw new HttpException(
+        error.message || 'Failed to get a posts',
+        error.status || HttpStatus.BAD_REQUEST,
+      );
     }
   }
 
