@@ -23,6 +23,11 @@ export class UsersController {
     return this.usersService.getAllUsers(options);
   }
 
+  @Post(':usersId')
+  getUsersById(@Body() { usersId }: { usersId: string[] }) {
+    return this.usersService.getUsersById(usersId);
+  }
+
   @Get(':userId')
   getUserById(@Param() { userId }: { userId: string }) {
     return this.usersService.getUserById(userId);
