@@ -44,8 +44,11 @@ export class UsersController {
   }
 
   @Put(':userId')
-  updateUserById(@Param() userId: string, @Body() body: UpdateUserDto) {
-    return `user updated`;
+  updateUserById(
+    @Param() { userId }: { userId: string },
+    @Body() body: UpdateUserDto,
+  ) {
+    return this.usersService.updateser(userId, body);
   }
 
   @Delete(':userId')

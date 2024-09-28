@@ -7,6 +7,7 @@ import { hash } from 'bcrypt';
 import { Post } from 'src/posts/schema/post-schema';
 import { CreateUserByGoogleDto } from './dto/create-user-by-google-dto';
 import { Options } from './types/get-users-options';
+import { UpdateUserDto } from './dto/update-user-dto';
 
 @Injectable()
 export class UsersService {
@@ -208,6 +209,32 @@ export class UsersService {
     for (const user of users) hash_ids[user._id.toString()] = user;
 
     return hash_ids;
+  }
+
+  async updateser(userId: string, updateUserDto: UpdateUserDto) {
+    try {
+      const objectId = new mongoose.Types.ObjectId(userId);
+      if (!mongoose.isValidObjectId(objectId)) {
+        throw new HttpException('Invalid userId', HttpStatus.BAD_REQUEST);
+      }
+
+      const user = await this.userModel
+        .findById(objectId)
+        .select({ hashedPassword: false, __v: false })
+        .exec();
+
+      // check if user exist
+      if (!user) {
+        throw new HttpException('User not exists', HttpStatus.BAD_REQUEST);
+      }
+
+      return await this.userModel
+        .findByIdAndUpdate(objectId, updateUserDto, { new: true })
+        .select({ hashedPassword: false, __v: false })
+        .exec();
+    } catch (error) {
+      Logger.error(error);
+    }
   }
 
   async follow(userId: string, followId: string) {
