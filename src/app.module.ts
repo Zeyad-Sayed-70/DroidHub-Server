@@ -14,7 +14,9 @@ import { ImageModule } from './image/image.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({
+      envFilePath: ['.env.local', '.env'],
+    }),
     MongooseModule.forRoot(process.env.MONGODB_URI),
     PostsModule,
     UsersModule,

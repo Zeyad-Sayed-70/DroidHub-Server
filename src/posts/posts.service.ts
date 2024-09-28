@@ -101,6 +101,31 @@ export class PostsService {
     }
   }
 
+  async getPostsByUser(userId: string, limit = 8, skip = 0) {
+    try {
+      const posts = await this.postModel
+        .find({ creatorId: userId })
+        .limit(limit)
+        .skip(skip)
+        .exec();
+
+      if (!posts) {
+        throw new HttpException('Posts not found', HttpStatus.NOT_FOUND); // 404 Not Found
+      }
+
+      // Fetch all users in hash map structure
+      const users = await this.usersService.getUsersByPosts(posts);
+
+      return { posts, users };
+    } catch (error) {
+      Logger.error(error);
+      throw new HttpException(
+        error.message || 'Failed to get a posts',
+        error.status || HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
   async updatePost(postId: string, post: UpdatePostDto) {
     try {
       const updatedPost = await this.postModel

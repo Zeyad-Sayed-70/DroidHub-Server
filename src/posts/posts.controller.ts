@@ -37,6 +37,15 @@ export class PostsController {
     return this.postsService.getPostsByTags(tags, limit, skip);
   }
 
+  @Get('/byUser/:userId')
+  getPostsByUser(
+    @Param() { userId }: { userId: string },
+    @Query('limit') limit,
+    @Query('skip') skip,
+  ) {
+    return this.postsService.getPostsByUser(userId, limit, skip);
+  }
+
   @Post()
   createPost(@Body() createPostDto: CreatePostDto) {
     return this.postsService.createPost(createPostDto);

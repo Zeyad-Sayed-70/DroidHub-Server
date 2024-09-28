@@ -18,6 +18,9 @@ export class User {
   @Prop({ type: String })
   avatar: string;
 
+  @Prop({ type: String })
+  banar: string;
+
   @Prop({ type: String, default: 'DroidHub Member' })
   role: string;
 
