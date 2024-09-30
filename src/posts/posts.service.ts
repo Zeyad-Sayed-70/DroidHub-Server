@@ -1,4 +1,11 @@
-import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import {
+  forwardRef,
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Post } from './schema/post-schema';
 import mongoose, { Model } from 'mongoose';
@@ -10,6 +17,7 @@ import { CreateCommentsDto } from './dto/create-comments-dto';
 import { Comment } from './schema/comment-schema';
 import { UpdateCommentsDto } from './dto/update-comment-dto';
 import { UserType } from 'src/users/types/user.types';
+import { NotificationsService } from 'src/notifications/notifications.service';
 
 @Injectable()
 export class PostsService {
@@ -17,6 +25,8 @@ export class PostsService {
     @InjectModel(Post.name) private postModel: Model<Post>,
     @InjectModel(Comment.name) private commentModel: Model<Comment>,
     private readonly usersService: UsersService,
+    @Inject(forwardRef(() => NotificationsService))
+    private notificationsService: NotificationsService,
   ) {}
 
   async createPost(post: CreatePostDto) {
@@ -198,6 +208,12 @@ export class PostsService {
       await user.save();
       await post.save();
 
+      // Send Notification to post's creator
+      await this.notificationsService.sendNotification({
+        userId: post.creatorId,
+        message: `${user.username} liked your post`,
+      });
+
       return { post, user };
     } catch (error) {
       Logger.error(error);
@@ -237,6 +253,12 @@ export class PostsService {
 
       post.comments.push(newComment._id.toString());
       await post.save();
+
+      // Send Notification to post's creator
+      await this.notificationsService.sendNotification({
+        userId: post.creatorId,
+        message: `${user.username} commented on your post`,
+      });
 
       return newComment;
     } catch (error) {
