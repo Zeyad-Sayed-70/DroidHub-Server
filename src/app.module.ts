@@ -11,6 +11,7 @@ import { SearchController } from './search/search.controller';
 import { SearchModule } from './search/search.module';
 import { CommunitiesModule } from './communities/communities.module';
 import { ImageModule } from './image/image.module';
+import { NotificationsModule } from './notifications/notification.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { ImageModule } from './image/image.module';
     SearchModule,
     CommunitiesModule,
     ImageModule,
+    NotificationsModule,
   ],
   controllers: [AppController, SearchController],
   providers: [AppService, SearchService],

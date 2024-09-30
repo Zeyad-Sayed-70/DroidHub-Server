@@ -1,4 +1,11 @@
-import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import {
+  forwardRef,
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 import { User } from './schema/user.schema';
@@ -8,10 +15,15 @@ import { Post } from 'src/posts/schema/post-schema';
 import { CreateUserByGoogleDto } from './dto/create-user-by-google-dto';
 import { Options } from './types/get-users-options';
 import { UpdateUserDto } from './dto/update-user-dto';
+import { NotificationsService } from 'src/notifications/notifications.service';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
+  constructor(
+    @InjectModel(User.name) private userModel: Model<User>,
+    @Inject(forwardRef(() => NotificationsService))
+    private notificationsService: NotificationsService,
+  ) {}
 
   async createUser(createUserDto: CreateUserDto) {
     try {
@@ -285,6 +297,12 @@ export class UsersService {
 
       await user.save();
       await followUser.save();
+
+      // Send Notification to follow user
+      await this.notificationsService.sendNotification({
+        message: `${user.username} started following you.`,
+        userId: objectId.toString(),
+      });
 
       return user;
     } catch (error) {
