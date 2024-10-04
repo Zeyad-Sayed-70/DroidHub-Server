@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PostsModule } from './posts/posts.module';
@@ -12,6 +12,8 @@ import { SearchModule } from './search/search.module';
 import { CommunitiesModule } from './communities/communities.module';
 import { ImageModule } from './image/image.module';
 import { NotificationsModule } from './notifications/notification.module';
+import { AppGateway } from './app.gateway';
+import { MessagesModule } from './messages/messages.module';
 
 @Module({
   imports: [
@@ -25,9 +27,11 @@ import { NotificationsModule } from './notifications/notification.module';
     SearchModule,
     CommunitiesModule,
     ImageModule,
-    NotificationsModule,
+    forwardRef(() => NotificationsModule),
+    forwardRef(() => MessagesModule),
   ],
   controllers: [AppController, SearchController],
-  providers: [AppService, SearchService],
+  providers: [AppService, SearchService, AppGateway],
+  exports: [AppGateway],
 })
 export class AppModule {}

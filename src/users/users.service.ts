@@ -16,6 +16,7 @@ import { CreateUserByGoogleDto } from './dto/create-user-by-google-dto';
 import { Options } from './types/get-users-options';
 import { UpdateUserDto } from './dto/update-user-dto';
 import { NotificationsService } from 'src/notifications/notifications.service';
+import { MessagesService } from 'src/messages/messages.service';
 
 @Injectable()
 export class UsersService {
@@ -23,6 +24,8 @@ export class UsersService {
     @InjectModel(User.name) private userModel: Model<User>,
     @Inject(forwardRef(() => NotificationsService))
     private notificationsService: NotificationsService,
+    @Inject(forwardRef(() => MessagesService))
+    private messagesService: MessagesService,
   ) {}
 
   async createUser(createUserDto: CreateUserDto) {
@@ -134,7 +137,7 @@ export class UsersService {
     }
   }
 
-  async getUsersById(usersIds: string[]) {
+  async getUsersByIds(usersIds: string[], withUsersInChats = false) {
     try {
       const users = await this.userModel
         .find({
@@ -144,6 +147,47 @@ export class UsersService {
         })
         .select({ hashedPassword: false, __v: false })
         .exec();
+
+      if (withUsersInChats) {
+        // Map to store all fetched users (including users from chats)
+        const allUsers = new Map(
+          users.map((user) => [user._id.toString(), user]),
+        );
+
+        // Fetch messages related to the first user in userIds (assumes userIds[0] is the primary user)
+        const messagesRelatedToUser =
+          await this.messagesService.getMessagesByUserId(usersIds[0]);
+
+        // Loop through each message to extract the other user in the chat
+        for (const message of messagesRelatedToUser) {
+          const [fromId, toId] = message.usersIds;
+
+          // Fetch and cache user from "fromId" if not already in the map
+          if (!allUsers.has(fromId.toString())) {
+            const fromUser = await this.userModel
+              .findById(fromId)
+              .select({ hashedPassword: false, __v: false })
+              .exec();
+            if (fromUser) {
+              allUsers.set(fromId.toString(), fromUser);
+            }
+          }
+
+          // Fetch and cache user from "toId" if not already in the map
+          if (!allUsers.has(toId.toString())) {
+            const toUser = await this.userModel
+              .findById(toId)
+              .select({ hashedPassword: false, __v: false })
+              .exec();
+            if (toUser) {
+              allUsers.set(toId.toString(), toUser);
+            }
+          }
+        }
+
+        // Return all unique users from both direct userIds and users in related messages
+        return Array.from(allUsers.values());
+      }
 
       return users;
     } catch (error) {
@@ -301,7 +345,7 @@ export class UsersService {
       // Send Notification to follow user
       await this.notificationsService.sendNotification({
         message: `${user.username} started following you.`,
-        userId: objectId.toString(),
+        userId: followObjectId.toString(),
       });
 
       return user;

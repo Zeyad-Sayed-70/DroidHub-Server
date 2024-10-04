@@ -3,21 +3,21 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Notification } from './notification.schema';
 import { SendNotificationDto } from './send-notification.dto';
-import { NotificationsGateway } from './notifications.gateway';
+import { AppGateway } from '../app.gateway';
 
 @Injectable()
 export class NotificationsService {
   constructor(
     @InjectModel('Notification')
     private readonly notificationModel: Model<Notification>,
-    @Inject(forwardRef(() => NotificationsGateway))
-    private notificationsGateway: NotificationsGateway,
+    @Inject(forwardRef(() => AppGateway))
+    private appGateway: AppGateway,
   ) {}
 
   async sendNotification(sendNotificationDto: SendNotificationDto) {
     const { message, userId } = sendNotificationDto;
     // Emit the notification to the specific user via WebSocket
-    this.notificationsGateway.handleSendNotification(null, { message, userId });
+    this.appGateway.handleSendNotification(null, { message, userId });
   }
 
   async createNotification(message: string, userId: string) {

@@ -285,7 +285,7 @@ export class PostsService {
         .exec();
 
       const usersIds = comments.map((comment) => comment.userId);
-      const users = await this.usersService.getUsersById(usersIds);
+      const users = await this.usersService.getUsersByIds(usersIds);
 
       const usersHash = {};
       users.forEach((user) => {
