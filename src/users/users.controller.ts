@@ -23,9 +23,18 @@ export class UsersController {
     return this.usersService.getAllUsers(options);
   }
 
-  @Post(':usersId')
-  getUsersById(@Body() { usersId }: { usersId: string[] }) {
-    return this.usersService.getUsersById(usersId);
+  @Post('/usersId')
+  getUsersByIds(
+    @Body()
+    {
+      usersIds,
+      withUsersInChats,
+    }: {
+      usersIds: string[];
+      withUsersInChats: boolean;
+    },
+  ) {
+    return this.usersService.getUsersByIds(usersIds, withUsersInChats);
   }
 
   @Get(':userId')

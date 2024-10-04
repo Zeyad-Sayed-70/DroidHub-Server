@@ -3,22 +3,22 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { NotificationsService } from './notifications.service';
 import { NotificationsController } from './notifications.controller';
 import { Notification, NotificationSchema } from './notification.schema';
-import { NotificationsGateway } from './notifications.gateway';
+import { AppGateway } from '../app.gateway';
+import { AppModule } from 'src/app.module';
+import { MessagesModule } from 'src/messages/messages.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: Notification.name, schema: NotificationSchema },
     ]),
-    forwardRef(() => NotificationsModule), // Forward reference to handle circular dependency
+    forwardRef(() => AppModule),
+    forwardRef(() => MessagesModule),
   ],
   controllers: [NotificationsController],
   providers: [
     NotificationsService,
-    {
-      provide: NotificationsGateway,
-      useClass: NotificationsGateway,
-    },
+    { provide: AppGateway, useClass: AppGateway },
   ],
   exports: [NotificationsService],
 })
